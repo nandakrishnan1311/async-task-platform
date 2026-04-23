@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskflow-worker
+  namespace: taskflow
+  labels:
+    app: worker
+spec:
+  replicas: 2  # Scale this up for high task volume (e.g., 100k tasks/day)
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: your-dockerhub-username/taskflow-worker:latest
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: taskflow-secrets
+                  key: MONGO_URI
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: taskflow-config
+                  key: REDIS_URL
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          # Worker does not need liveness HTTP probe - uses process health
+          livenessProbe:
+            exec:
+              command: ["python", "-c", "import redis; r=redis.Redis.from_url('redis://taskflow-redis-service:6379'); r.ping()"]
+            initialDelaySeconds: 15
+            periodSeconds: 30
