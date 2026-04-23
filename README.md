@@ -44,7 +44,7 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/mern-task-platform.git
+git clone https://github.com/YOUR_USERNAME/async-task-platform.git
 cd mern-task-platform
 
 # 2. Start all services
